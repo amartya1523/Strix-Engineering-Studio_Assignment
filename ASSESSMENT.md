@@ -13,7 +13,7 @@
 | Chat with code | Persisted sessions/messages; lexical context retrieval; recent conversation context |
 | Configurable AI | User-owned provider settings; base URL, model and encrypted key; edit, remove and connection test |
 | Required providers | OpenAI, LM Studio, any OpenAI-compatible Chat Completions endpoint |
-| Bonus provider support | Ollama and OpenRouter presets |
+| Bonus provider support | Ollama, OpenRouter and Groq presets |
 | Bonus feature 1 | Documentation generator: Markdown README, setup guide and API documentation |
 | Bonus feature 2 | Architecture analysis: components, data flow, boundaries and tradeoffs |
 | Submission structure and disclosure | Separate `frontend/`, `backend/`, plus `README.md`, `ARCHITECTURE.md`, `AI_USAGE.md` |

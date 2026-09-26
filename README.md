@@ -129,7 +129,7 @@ For a frontend production build, run `npm run build` followed by `npm start` in 
 - **Actionable findings:** structured summaries, severity filters, file/line references, recommendations, and Markdown export.
 - **Review history:** searchable, paginated analyses with saved results.
 - **Chat with code:** questions grounded in relevant uploaded files and recent conversation context.
-- **Bring your own model:** configurable OpenAI, LM Studio, Ollama, OpenRouter, and other OpenAI-compatible endpoints; encrypted API keys and connection checks.
+- **Bring your own model:** configurable OpenAI, LM Studio, Ollama, OpenRouter, Groq, and other OpenAI-compatible endpoints; encrypted API keys and connection checks.
 - **Documentation generation:** README, setup guide, and API documentation.
 - **Architecture analysis:** components, dependencies, data flow, boundaries, and design tradeoffs.
 
@@ -144,6 +144,7 @@ All providers use `{base_url}/chat/completions`. Choose an exact model ID that y
 | OpenAI | `https://api.openai.com/v1` | Your OpenAI API key | An available Chat Completions model ID |
 | LM Studio | `http://localhost:1234/v1` | Usually unnecessary | ID of the loaded model |
 | Ollama | `http://localhost:11434/v1` | Usually unnecessary | Name of a pulled model |
+| Groq | `https://api.groq.com/openai/v1` | Your Groq API key | An available Groq text model ID |
 | OpenRouter | `https://openrouter.ai/api/v1` | Your OpenRouter key | Provider/model ID from your account |
 | Custom | Your HTTP(S) OpenAI-compatible base URL | As required | Exact server model ID |
 
@@ -152,6 +153,29 @@ For LM Studio, load a model and start its developer server. For Ollama, pull a m
 Use **Test connection** to validate model availability and credentials. A successful test sends a small request and may incur provider charges. Review/chat sends the selected/retrieved code to the selected provider; choose a local provider for sensitive code. No API key is needed merely to register, upload, preview, or browse the application.
 
 Reviews request JSON mode and retry once without `response_format` for servers rejecting that option. Pydantic validates every result and its source references. Unsupported/malformed outputs produce an actionable error and are not recorded as successful reviews. No simulated AI results appear in the normal app.
+
+### Private server-configured provider
+
+You can configure a provider in the ignored `backend/.env` instead of entering its key in the browser. This provider is available only to one registered account, matched by **both account ID and email**. Other accounts cannot list or invoke it.
+
+1. Register the owner account with the environment provider disabled (`DEFAULT_AI_API_KEY` empty).
+2. While signed in, open `/api/auth/me` and copy the account's `id`.
+3. Set the following values privately in `backend/.env` and restart the backend:
+
+```dotenv
+DEFAULT_AI_PROVIDER_NAME=Groq
+DEFAULT_AI_BASE_URL=https://api.groq.com/openai/v1
+DEFAULT_AI_MODEL=openai/gpt-oss-120b
+DEFAULT_AI_API_KEY=your-private-key
+DEFAULT_AI_OWNER_EMAIL=your-registered-email@example.com
+DEFAULT_AI_OWNER_ID=your-registered-account-id
+```
+
+The model shown above was available and live-tested on 26 September 2026; choose a model supported by your account. [Groq's OpenAI compatibility documentation](https://console.groq.com/docs/openai) describes its endpoint. **Groq** and xAI's **Grok** are different services; their API keys are not interchangeable.
+
+The managed provider appears in **AI providers** and can be used for all review modes and code chat. Its key is never returned to the browser or persisted as a new database provider; the backend reads it privately at request time. Edit or remove it through the environment file, not the provider UI. Manually created providers retain encrypted database storage.
+
+For Docker Compose, put these optional settings in the ignored **root `.env`** instead. Register the owner in that Docker database first: account IDs from a different database will not work. Recreate the backend container after changing environment settings. Leave all optional keys empty when sharing the repository.
 
 ## Environment variables
 
@@ -168,6 +192,12 @@ Reviews request JSON mode and retry once without `response_format` for servers r
 | `ALLOW_LOCAL_AI` | `true` | Permit private/loopback inference endpoints; disable on public deployments |
 | `AI_TIMEOUT_SECONDS` | `120` | Provider request timeout |
 | `MAX_CONTEXT_CHARS` | `60000` | Review context limit, including line numbers and path metadata |
+| `DEFAULT_AI_PROVIDER_NAME` | Empty | Optional private provider display name |
+| `DEFAULT_AI_BASE_URL` | Empty | Optional OpenAI-compatible base URL |
+| `DEFAULT_AI_MODEL` | Empty | Optional provider model ID |
+| `DEFAULT_AI_API_KEY` | Empty | Server-only key; empty disables the environment provider |
+| `DEFAULT_AI_OWNER_EMAIL` | Empty | Registered owner email, normalized to lowercase |
+| `DEFAULT_AI_OWNER_ID` | Empty | Exact registered owner account ID; required when enabling the key |
 
 Generate a Fernet key with:
 
@@ -222,6 +252,17 @@ First install the browser with `npx playwright install chromium` (on Linux, `npx
 
 See [TEST_REPORT.md](TEST_REPORT.md) for verified results and limitations. CI runs backend checks against a PostgreSQL service and checks the frontend with its committed lockfile.
 
+### Opt-in live provider verification
+
+Live tests send **only the bundled sample files** to the configured provider and can incur provider charges. They use a dedicated database ending in `_live_e2e`; no normal application accounts are modified. Configure the private provider first, create that disposable database, then run:
+
+```bash
+cd backend
+LIVE_TEST_DATABASE_URL='postgresql+psycopg://codeatlas_dev:choose-a-local-password@localhost:5432/codeatlas_live_e2e' .venv/bin/python ../scripts/test_live_ai.py
+```
+
+The script exercises the real API, all five modes, single/multiple/project selection, code chat, persistence, history, and credential isolation. It temporarily binds the provider to its disposable test account in memory, without changing your `.env` owner ID. A transient upstream failure is retried at most once after 30 seconds. A sanitized report stays in the ignored `backend/.local/` directory. CI and standard browser tests explicitly disable environment credentials and continue to use fixtures.
+
 ## Upload and AI limits
 
 - Maximum: 300 files per project, 512 KB per source file, 10 MB per upload/project.
@@ -241,7 +282,7 @@ Browser → Next.js App Router / same-origin API proxy → FastAPI routers → S
 
 This is a production-oriented assessment, not a claim of audited public-service readiness. Deploy behind HTTPS, set `ENVIRONMENT=production`, `COOKIE_SECURE=true`, an exact `FRONTEND_ORIGIN`, and a stable `ENCRYPTION_KEY`. Use `ALLOW_LOCAL_AI=false` and outbound firewall rules/approved provider hosts when serving untrusted users. Put upload size limits, shared rate limiting and request timeouts at the gateway. The built-in authentication limiter is process-local; large/parallel AI workloads would benefit from a worker queue and shared quotas. Back up the database and encryption key together.
 
-Live paid-provider quality/latency evaluation needs your provider key or running local model. Docker deployment is supplied for reproducibility; see the test report for whether it was run in the development environment.
+Live Groq integration was verified with `openai/gpt-oss-120b`; other providers and model-specific quality/latency still need their own evaluation. Docker deployment is supplied for reproducibility; see the test report for whether it was run in the development environment.
 
 ## Documentation
 

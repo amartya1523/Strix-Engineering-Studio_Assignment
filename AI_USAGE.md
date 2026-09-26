@@ -61,3 +61,11 @@ Generated code was not treated as self-validating. Backend access control, expir
 ## Candidate review before submission
 
 Read the implementation and be ready to explain cookie revocation, row-level ownership checks, ZIP validation, PostgreSQL cascades, prompt construction, model-response validation and the retrieval limits. Do not represent this AI-authored implementation as independently human-written. Add your own account of any subsequent changes, testing or live provider evaluation to this disclosure.
+
+## Follow-up: Groq integration and live verification
+
+The user supplied a provider credential and explicitly requested private environment configuration, live testing and a GitHub update. The credential is deliberately omitted from this disclosure and every tracked file. Its provider was verified by authenticating with Groq's model-list endpoint. The available `openai/gpt-oss-120b` model was selected for live verification.
+
+Codex added a Groq UI preset, an optional environment-managed provider restricted by registered owner ID and email, secret-redacted settings, read-only managed-provider controls, wider dotenv ignore rules and an opt-in real-provider test script. Unit and browser tests disable environment credentials. Live verification sends only bundled assessment samples, not local environment files or credentials, as model context. See `TEST_REPORT.md` for results, including any transient request failures.
+
+These follow-up code and documentation changes were also AI-authored and tested; no manually human-written implementation is claimed.

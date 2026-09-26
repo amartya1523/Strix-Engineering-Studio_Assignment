@@ -6,17 +6,18 @@ Verified locally on **26 September 2026** with Node.js 22.22.2, Python 3.12, Pos
 
 | Check | Observed outcome |
 | --- | --- |
-| Backend integration/unit tests | **32 passed** against real PostgreSQL |
+| Backend integration/unit tests | **36 passed** against real PostgreSQL |
 | Ruff lint | Passed |
 | Ruff formatting check | Passed |
 | Frontend ESLint | Passed without warnings |
 | TypeScript strict typecheck | Passed |
 | Next.js production build | Passed; all pages and the route proxy compiled |
+| Live Groq feature verification | Passed with `openai/gpt-oss-120b`: five modes, grounded chat, persistence, history and owner isolation; one bounded architecture retry in the final run |
 | Browser end-to-end suite | **3 passed**, including the comprehensive desktop workflow and mobile navigation/layout |
 | PostgreSQL migration round trip | Upgrade → downgrade → upgrade passed on a dedicated scratch database |
 | Docker Compose configuration | `docker compose config --quiet` passed after generating local secrets |
 | Frontend dependency audit | npm reported **0 vulnerabilities** at installation |
-| Running application | Frontend production server opened at `http://localhost:3000`; backend health returned `database: connected` |
+| Running application | Production frontend proxy verified owner login, private Groq visibility, live connection, protected page and logout; backend health returned `database: connected` |
 | Visual review | Desktop login, populated dashboard/workbench and 390px mobile dashboard reviewed; no horizontal overflow in tested mobile pages |
 
 ## Backend coverage
@@ -29,6 +30,7 @@ Verified locally on **26 September 2026** with Node.js 22.22.2, Python 3.12, Pos
 - ZIP folder hierarchy, secret-file/generated-directory exclusion, corrupt archive, binary and oversized-file rejection.
 - Absolute/traversal/Windows path rejection and request-body limits before multipart parsing.
 - Provider key encryption, secret-free response serialization, edits, connection test and deletion.
+- Environment-managed provider restricted by both registered account ID and email; immutable through the provider UI; SecretStr and validation-error redaction.
 - Unsafe provider destinations and URL credential/query rejection.
 - All five analysis modes, structured severity output, exact path/line references and searchable stored history.
 - One-file, multiple-file and whole-project selection; invalid selections rejected.
@@ -52,9 +54,25 @@ Browser tests use a separate PostgreSQL database ending in `_e2e`. A local OpenA
 - Multipart uploads are bounded before parsing, including requests without a declared content length, in addition to source/archive/project quotas.
 - Final readability adjustments increased source and analysis-control text sizes; responsive screenshots were reviewed after the changes.
 
+## Live provider verification
+
+The supplied credential authenticated successfully against Groq's model-list endpoint. Live calls then exercised `openai/gpt-oss-120b` through the real application routes and real PostgreSQL in a dedicated `_live_e2e` database:
+
+- Owner-scoped environment provider visibility and connection check.
+- Single-file security review; multiple-file performance review; full-project code-quality review.
+- Generated documentation and architecture artifacts, validated against the application's JSON schema and source references.
+- Code-grounded chat with a `src/auth.py` reference; persisted messages and searchable review history.
+- Logout and an unrelated account unable to see or invoke the environment-managed credential.
+
+Only bundled sample files were supplied as AI context. No environment files or actual credentials were uploaded as code. The private key and sanitized local execution report are excluded from Git and the handover ZIP.
+
+An initial chat request failed with HTTP 502; a subsequent real chat request passed. The final complete live run passed, with one architecture request succeeding after a single 30-second retry. The opt-in verification script reports these attempts rather than presenting them as first-attempt successes. Normal app requests surface provider errors instead of manufacturing output.
+
+A local owner account was configured, with login details stored only in ignored `backend/.local/owner-login.json`. The managed key is visible only to the exact account ID and email configured in ignored `backend/.env`; no login details or account identifiers are included in this report.
+
 ## Limits of this verification
 
-- **No paid/cloud credentials or running LM Studio/Ollama model were available.** Live model quality, account-specific models and provider latency were not verified. The transport/contract paths were verified with HTTPX mocks and a separate deterministic endpoint.
+- **Groq was tested live** with a privately configured credential and the available `openai/gpt-oss-120b` model. Other cloud providers and running LM Studio/Ollama models were not tested. These sample-based checks verify integration and observable feature behavior; they do not establish comprehensive model accuracy or latency guarantees.
 - **Docker Engine was not running.** Compose configuration was validated; container builds/startup were not executed. The application itself ran directly on the host with real PostgreSQL.
 - Automated browser coverage uses Chromium; other browser engines, broad accessibility audits, load tests and public deployment were not performed.
 - The backend test runner emits a Starlette deprecation warning for its HTTPX TestClient adapter; assertions pass. It is a dependency warning, not an application failure.
