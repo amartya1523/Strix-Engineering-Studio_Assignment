@@ -1,6 +1,8 @@
 # Secrets and local state
 .env
 .env.local
+.env.*
+!.env.example
 .env.*.local
 **/.local/
 # Dependencies and build output

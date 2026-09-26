@@ -363,3 +363,86 @@ def test_upload_request_body_limit(client, project):
         headers={"Content-Length": str(12 * 1024 * 1024), "Content-Type": "multipart/form-data; boundary=test"},
     )
     assert response.status_code == 413
+
+
+def test_environment_provider_is_owner_only_and_secret_free(client, account, monkeypatch):
+    from pydantic import SecretStr
+    from app.config import get_settings
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "default_ai_api_key", SecretStr("environment-test-key"))
+    monkeypatch.setattr(settings, "default_ai_provider_name", "Groq test")
+    monkeypatch.setattr(settings, "default_ai_base_url", "http://localhost:8123/v1")
+    monkeypatch.setattr(settings, "default_ai_model", "fixture-model")
+    monkeypatch.setattr(settings, "default_ai_owner_email", "alex@example.com")
+    monkeypatch.setattr(settings, "default_ai_owner_id", account["id"])
+    response = client.get("/api/providers")
+    assert response.status_code == 200
+    assert response.json()[0]["id"] == "environment"
+    assert response.json()[0]["environment_managed"] is True
+    assert "environment-test-key" not in response.text
+    fake_ai(monkeypatch, "OK")
+    assert client.post("/api/providers/environment/test").status_code == 200
+    assert client.delete("/api/providers/environment").status_code == 409
+    assert (
+        client.put(
+            "/api/providers/environment",
+            json={"name": "Changed", "base_url": "http://localhost:8123/v1", "model": "test"},
+        ).status_code
+        == 409
+    )
+    client.post("/api/auth/logout")
+    client.post(
+        "/api/auth/register", json={"name": "Other", "email": "other@example.com", "password": "different-password"}
+    )
+    assert client.get("/api/providers").json() == []
+    assert client.post("/api/providers/environment/test").status_code == 404
+
+
+def test_environment_key_repr_is_redacted():
+    from pydantic import SecretStr
+    from app.config import Settings
+
+    settings = Settings(
+        _env_file=None,
+        default_ai_api_key=SecretStr("test-private-key"),
+        default_ai_provider_name="Groq",
+        default_ai_base_url="https://api.groq.com/openai/v1",
+        default_ai_model="test-model",
+        default_ai_owner_email="OWNER@example.com",
+        default_ai_owner_id="test-owner",
+    )
+    assert settings.default_ai_owner_email == "owner@example.com"
+    assert "test-private-key" not in repr(settings)
+
+
+def test_environment_provider_requires_owner():
+    from pydantic import ValidationError, SecretStr
+    from app.config import Settings
+
+    with pytest.raises(ValidationError):
+        Settings(
+            _env_file=None,
+            default_ai_api_key=SecretStr("test-key"),
+            default_ai_provider_name="Groq",
+            default_ai_base_url="https://api.groq.com/openai/v1",
+            default_ai_model="test",
+            default_ai_owner_email="",
+        )
+
+
+def test_environment_validation_error_does_not_echo_secret():
+    from pydantic import ValidationError, SecretStr
+    from app.config import Settings
+
+    with pytest.raises(ValidationError) as captured:
+        Settings(
+            _env_file=None,
+            default_ai_api_key=SecretStr("must-never-appear-in-error"),
+            default_ai_provider_name="",
+            default_ai_base_url="",
+            default_ai_model="",
+            default_ai_owner_email="",
+            default_ai_owner_id="",
+        )
+    assert "must-never-appear-in-error" not in str(captured.value)

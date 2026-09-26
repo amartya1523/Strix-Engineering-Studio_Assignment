@@ -41,6 +41,7 @@ const presets = [
     model: '',
     local: false,
   },
+  { name: 'Groq', base_url: 'https://api.groq.com/openai/v1', model: '', local: false },
   { name: 'Custom endpoint', base_url: '', model: '', local: false },
 ];
 export default function ProvidersPage() {
@@ -151,8 +152,9 @@ export default function ProvidersPage() {
         <div>
           <strong>Your keys. Your choice. Your control.</strong>
           <p>
-            API keys are encrypted on the server and never returned to your browser. Code is sent
-            only to the provider you select when you run an analysis or chat.
+            Saved API keys are encrypted; environment keys stay on the server. Keys are never
+            returned to your browser. Code is sent only to the provider you select when you run an
+            analysis or chat.
           </p>
         </div>
       </div>
@@ -180,6 +182,8 @@ export default function ProvidersPage() {
                   <button
                     className="icon-btn"
                     aria-label={`Edit ${p.name}`}
+                    disabled={p.environment_managed}
+                    title={p.environment_managed ? 'Managed in backend .env' : 'Edit provider'}
                     onClick={() => open(p)}
                   >
                     <Pencil size={16} />
@@ -187,6 +191,8 @@ export default function ProvidersPage() {
                   <button
                     className="icon-btn"
                     aria-label={`Delete ${p.name}`}
+                    disabled={p.environment_managed}
+                    title={p.environment_managed ? 'Managed in backend .env' : 'Remove provider'}
                     onClick={() => setDeleting(p)}
                   >
                     <Trash2 size={16} />
@@ -199,7 +205,11 @@ export default function ProvidersPage() {
               <div className="provider-card-footer">
                 <span className="text-sm muted">
                   <ShieldCheck size={14} />
-                  {p.has_api_key ? 'Key encrypted' : 'No API key'}
+                  {p.environment_managed
+                    ? 'Private server configuration'
+                    : p.has_api_key
+                      ? 'Key encrypted'
+                      : 'No API key'}
                 </span>
                 <button className="btn small" disabled={!!testing} onClick={() => test(p)}>
                   {testing === p.id ? (
@@ -223,7 +233,7 @@ export default function ProvidersPage() {
         <div className="empty-state">
           <SlidersHorizontal size={32} />
           <h3>Choose your intelligence.</h3>
-          <p>Connect OpenAI, LM Studio, Ollama, OpenRouter, or your own endpoint.</p>
+          <p>Connect OpenAI, Groq, LM Studio, Ollama, OpenRouter, or your own endpoint.</p>
           <button className="btn primary" onClick={() => open()}>
             <Plus size={17} /> Connect your first provider
           </button>

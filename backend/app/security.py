@@ -33,7 +33,31 @@ def owned_project(db, user, project_id):
     return project
 
 
+def environment_provider(user):
+    settings = get_settings()
+    if (
+        not settings.default_ai_api_key.get_secret_value()
+        or user.email != settings.default_ai_owner_email
+        or user.id != settings.default_ai_owner_id
+    ):
+        return None
+    # The credential is resolved per request, never returned to the browser or shared across accounts.
+    return Provider(
+        id="environment",
+        user_id=user.id,
+        name=settings.default_ai_provider_name,
+        base_url=settings.default_ai_base_url,
+        model=settings.default_ai_model,
+        encrypted_key=encrypt(settings.default_ai_api_key.get_secret_value()),
+    )
+
+
 def owned_provider(db, user, provider_id):
+    if provider_id == "environment":
+        provider = environment_provider(user)
+        if not provider:
+            raise HTTPException(404, "AI provider not found")
+        return provider
     provider = db.get(Provider, provider_id)
     if not provider or provider.user_id != user.id:
         raise HTTPException(404, "AI provider not found")

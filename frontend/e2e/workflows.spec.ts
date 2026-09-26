@@ -32,7 +32,7 @@ test('complete workspace: register, upload, review, artifacts, chat, history and
   await expect(page.locator('.code-lines')).toContainText('password');
   await page.getByRole('link', { name: 'Connect a provider to get started' }).click();
   await page.getByRole('button', { name: 'Add provider', exact: true }).click();
-  await page.getByLabel('Provider preset').selectOption('4');
+  await page.getByLabel('Provider preset').selectOption({ label: 'Custom endpoint' });
   await page.getByLabel('Display name').fill('E2E fixture (not AI)');
   await page.getByLabel('Base URL').fill('http://localhost:8123/v1');
   await page.getByLabel('Model name').fill('fixture-model');

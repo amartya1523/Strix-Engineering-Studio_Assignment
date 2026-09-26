@@ -91,6 +91,7 @@ class ProviderOut(ORMModel):
     base_url: str
     model: str
     has_api_key: bool = False
+    environment_managed: bool = False
 
 
 ReviewMode = Literal["security", "performance", "quality", "documentation", "architecture"]

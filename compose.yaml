@@ -23,6 +23,12 @@ services:
       ENVIRONMENT: development
       COOKIE_SECURE: "false"
       ALLOW_LOCAL_AI: "true"
+      DEFAULT_AI_PROVIDER_NAME: ${DEFAULT_AI_PROVIDER_NAME:-}
+      DEFAULT_AI_BASE_URL: ${DEFAULT_AI_BASE_URL:-}
+      DEFAULT_AI_MODEL: ${DEFAULT_AI_MODEL:-}
+      DEFAULT_AI_API_KEY: ${DEFAULT_AI_API_KEY:-}
+      DEFAULT_AI_OWNER_EMAIL: ${DEFAULT_AI_OWNER_EMAIL:-}
+      DEFAULT_AI_OWNER_ID: ${DEFAULT_AI_OWNER_ID:-}
     depends_on:
       db:
         condition: service_healthy

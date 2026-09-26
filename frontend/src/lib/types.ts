@@ -20,6 +20,7 @@ export type Provider = {
   base_url: string;
   model: string;
   has_api_key: boolean;
+  environment_managed: boolean;
 };
 export type Issue = {
   severity: 'critical' | 'high' | 'medium' | 'low';

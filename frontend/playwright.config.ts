@@ -27,6 +27,7 @@ export default defineConfig({
       reuseExistingServer: false,
       env: {
         DATABASE_URL: process.env.E2E_DATABASE_URL,
+        DEFAULT_AI_API_KEY: '',
         FRONTEND_ORIGIN: 'http://localhost:3100',
       },
     },

@@ -3,6 +3,7 @@ import os
 if not os.getenv("TEST_DATABASE_URL"):
     raise RuntimeError("Set TEST_DATABASE_URL to a dedicated PostgreSQL database ending in _test")
 os.environ["DATABASE_URL"] = os.environ["TEST_DATABASE_URL"]
+os.environ["DEFAULT_AI_API_KEY"] = ""
 os.environ["ENCRYPTION_KEY"] = "4cTHlgFE_tRFlpOFxYo6-Xmw1Ae7HvuouUwPgwgMFV8="
 
 import pytest
