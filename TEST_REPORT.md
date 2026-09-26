@@ -13,12 +13,12 @@ Verified locally on **26 September 2026** with Node.js 22.22.2, Python 3.12, Pos
 | TypeScript strict typecheck | Passed |
 | Next.js production build | Passed; all pages and the route proxy compiled |
 | Live Groq feature verification | Passed with `openai/gpt-oss-120b`: five modes, grounded chat, persistence, history and owner isolation; one bounded architecture retry in the final run |
-| Browser end-to-end suite | **3 passed**, including the comprehensive desktop workflow and mobile navigation/layout |
+| Browser end-to-end suite | **4 passed**, including the comprehensive desktop workflow, responsive workbench and motion/preference/navigation checks |
 | PostgreSQL migration round trip | Upgrade → downgrade → upgrade passed on a dedicated scratch database |
 | Docker Compose configuration | `docker compose config --quiet` passed after generating local secrets |
 | Frontend dependency audit | npm reported **0 vulnerabilities** at installation |
 | Running application | Production frontend proxy verified owner login, private Groq visibility, live connection, protected page and logout; backend health returned `database: connected` |
-| Visual review | Desktop login, populated dashboard/workbench and 390px mobile dashboard reviewed; no horizontal overflow in tested mobile pages |
+| Visual review | Reference-inspired desktop login/dashboard/workbench and 390px mobile dashboard/workbench reviewed; responsive and reduced-motion checks passed |
 
 ## Backend coverage
 
@@ -42,7 +42,8 @@ Verified locally on **26 September 2026** with Node.js 22.22.2, Python 3.12, Pos
 
 1. **Protected navigation:** unauthenticated project access redirects to the login screen.
 2. **Full desktop lifecycle:** registration → project creation → file upload → preview/highlighting → provider creation/connection check → selected-file security review → source-line navigation → Markdown download → documentation generation → architecture analysis → chat → reload/persistence → history search/details → project/provider deletion → logout → login.
-3. **Mobile:** 390 × 844 viewport; registration, empty dashboard, side navigation, provider empty state and no document-level horizontal overflow.
+3. **Mobile:** 390 × 844 viewport; registration, empty dashboard, side navigation, provider empty state and no document-level horizontal overflow. The desktop lifecycle also checks and captures the populated review workbench at this width.
+4. **Studio motion:** hydrated and completed ribbon reveals; runtime reduced-motion switching; 360, 768 and 1440px responsive layouts; navigation across projects/history/providers; no browser runtime errors or missing GSAP targets.
 
 Browser tests use a separate PostgreSQL database ending in `_e2e`. A local OpenAI-compatible fixture server exercises real HTTP transport, context and structured responses. Its provider name and every response clearly say **TEST FIXTURE / not AI**. Test projects/providers are deleted through the workflow; test accounts remain only in the dedicated test database. No test account/provider was created in the normal application database.
 
@@ -53,6 +54,7 @@ Browser tests use a separate PostgreSQL database ending in `_e2e`. A local OpenA
 - Source-reference navigation scrolls the source pane rather than deliberately scrolling the entire workspace.
 - Multipart uploads are bounded before parsing, including requests without a declared content length, in addition to source/archive/project quotas.
 - Final readability adjustments increased source and analysis-control text sizes; responsive screenshots were reviewed after the changes.
+- The reference-inspired interface adds scoped GSAP motion and self-hosted Antonio typography. Empty animation targets are guarded, route changes revert animation contexts, and screenshots wait for hydration and finished reveals rather than recording an intermediate animation frame.
 
 ## Live provider verification
 

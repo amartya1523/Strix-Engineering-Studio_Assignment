@@ -69,3 +69,7 @@ The user supplied a provider credential and explicitly requested private environ
 Codex added a Groq UI preset, an optional environment-managed provider restricted by registered owner ID and email, secret-redacted settings, read-only managed-provider controls, wider dotenv ignore rules and an opt-in real-provider test script. Unit and browser tests disable environment credentials. Live verification sends only bundled assessment samples, not local environment files or credentials, as model context. See `TEST_REPORT.md` for results, including any transient request failures.
 
 These follow-up code and documentation changes were also AI-authored and tested; no manually human-written implementation is claimed.
+
+## Reference-inspired interface update
+
+Codex studied the user-supplied [GSAP Awwwards website reference](https://github.com/Kafoor-Nimas/gsap-awwwards-website) and independently implemented a CodeAtlas-specific editorial interface: cream/chocolate/coral colors, self-hosted Antonio typography, tilted headline ribbons, CSS code illustrations, and GSAP reveals, floating elements and scroll parallax. Beverage artwork and source components were not copied. Animation setup is scoped and reverted on route changes; operating-system reduced-motion preferences are respected, including changes while the app is open. Browser coverage was extended to check these behaviors and responsive workbench layouts.
