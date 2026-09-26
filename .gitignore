@@ -1,0 +1,24 @@
+# Secrets and local state
+.env
+.env.local
+.env.*.local
+**/.local/
+# Dependencies and build output
+node_modules/
+.next/
+.next-e2e/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.tsbuildinfo
+# Local QA artifacts
+tmp/
+frontend/test-results/
+frontend/playwright-report/
+artifacts/
+.DS_Store
+*.log
+# Generated handover bundle
+CodeAtlas-submission.zip

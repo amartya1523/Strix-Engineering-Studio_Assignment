@@ -1,0 +1,48 @@
+import hashlib
+from datetime import datetime, timezone
+from fastapi import Depends, HTTPException, Request
+from pwdlib import PasswordHash
+from sqlalchemy.orm import Session
+from cryptography.fernet import Fernet
+from .config import get_settings
+from .db import get_db
+from .models import User, Session as LoginSession, Project, Provider
+
+passwords = PasswordHash.recommended()
+
+
+def token_hash(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def current_user(request: Request, db: Session = Depends(get_db)) -> User:
+    token = request.cookies.get("codeatlas_session", "")
+    session = db.get(LoginSession, token_hash(token)) if token else None
+    if not session or session.expires_at <= datetime.now(timezone.utc):
+        raise HTTPException(401, "Please sign in to continue")
+    user = db.get(User, session.user_id)
+    if not user:
+        raise HTTPException(401, "Please sign in to continue")
+    return user
+
+
+def owned_project(db, user, project_id):
+    project = db.get(Project, project_id)
+    if not project or project.user_id != user.id:
+        raise HTTPException(404, "Project not found")
+    return project
+
+
+def owned_provider(db, user, provider_id):
+    provider = db.get(Provider, provider_id)
+    if not provider or provider.user_id != user.id:
+        raise HTTPException(404, "AI provider not found")
+    return provider
+
+
+def encrypt(value: str) -> str:
+    return Fernet(get_settings().secret_key()).encrypt(value.encode()).decode() if value else ""
+
+
+def decrypt(value: str) -> str:
+    return Fernet(get_settings().secret_key()).decrypt(value.encode()).decode() if value else ""
