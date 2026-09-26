@@ -65,8 +65,8 @@ export default function ProjectsPage() {
     `${p.name} ${p.description}`.toLowerCase().includes(query.toLowerCase()),
   );
   return (
-    <main className="page">
-      <div className="page-heading">
+    <main className="page projects-page">
+      <div className="page-heading" data-reveal>
         <div>
           <span className="eyebrow">YOUR DEVELOPMENT DESK</span>
           <h1>
@@ -84,10 +84,10 @@ export default function ProjectsPage() {
           <span className="mini-label">
             <span className="live-dot" /> FROM CODE TO CLARITY
           </span>
-          <h2>
-            Your next great idea
+          <h2 data-reveal>
+            Good code.
             <br />
-            deserves a second look.
+            <span className="hero-ribbon">Great clarity.</span>
           </h2>
           <p>
             Upload your code, choose a review, and turn
@@ -98,6 +98,11 @@ export default function ProjectsPage() {
           </button>
         </div>
         <div className="hero-graphic" aria-hidden="true">
+          <span className="graphic-stamp">
+            BUILT TO SHIP
+            <br />
+            MADE TO LAST
+          </span>
           <div className="orbit orbit-one" />
           <div className="orbit orbit-two" />
           <div className="graphic-code">
@@ -130,7 +135,16 @@ export default function ProjectsPage() {
           <span className="floating-symbol symbol-two">{'</>'}</span>
         </div>
       </section>
-      <section className="stats-grid">
+      <div className="studio-band" aria-hidden="true">
+        <span>SECURITY</span>
+        <i>✳</i>
+        <span>PERFORMANCE</span>
+        <i>✳</i>
+        <span>CODE QUALITY</span>
+        <i>✳</i>
+        <span>CLARITY</span>
+      </div>
+      <section className="stats-grid" data-scroll-reveal>
         <div>
           <span className="stat-icon">
             <Layers3 size={20} />
@@ -186,7 +200,7 @@ export default function ProjectsPage() {
       {loading ? (
         <Loading />
       ) : filtered.length ? (
-        <div className="project-grid">
+        <div className="project-grid" data-scroll-reveal>
           {filtered.map((p, i) => (
             <article className="project-card" key={p.id}>
               <div className="project-card-top">

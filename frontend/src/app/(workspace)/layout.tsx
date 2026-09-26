@@ -15,6 +15,7 @@ import {
 import { Brand, Loading, ErrorBanner } from '@/components/ui';
 import { api, errorMessage, ApiError } from '@/lib/api';
 import { User } from '@/lib/types';
+import { MotionSurface } from '@/components/motion-surface';
 export default function Workspace({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const router = useRouter();
@@ -126,7 +127,7 @@ export default function Workspace({ children }: { children: React.ReactNode }) {
           </span>
         </header>
         <ErrorBanner message={error} />
-        {children}
+        <MotionSurface>{children}</MotionSurface>
         <footer className="workspace-footer">
           <span>Built for better decisions.</span>
           <span>

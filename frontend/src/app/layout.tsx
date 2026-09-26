@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import '@fontsource/antonio/700.css';
 import './globals.css';
+import './studio.css';
 export const metadata: Metadata = {
   title: 'CodeAtlas | Understand your code',
   description:

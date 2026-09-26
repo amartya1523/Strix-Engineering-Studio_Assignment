@@ -60,6 +60,20 @@ test('complete workspace: register, upload, review, artifacts, chat, history and
   await page.getByRole('button', { name: 'Architecture', exact: true }).click();
   await page.getByRole('button', { name: /Run architecture analysis/ }).click();
   await expect(page.getByRole('heading', { name: 'Generated architecture summary' })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect
+    .poll(() => page.locator('.sidebar').evaluate((el) => el.getBoundingClientRect().right))
+    .toBeLessThanOrEqual(0);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+  await page.screenshot({ path: '../artifacts/workspace-mobile.png', fullPage: true });
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await expect
+    .poll(() => page.locator('.sidebar').evaluate((el) => el.getBoundingClientRect().left))
+    .toBe(0);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: '../artifacts/workspace-desktop.png',
     fullPage: true,
@@ -80,6 +94,8 @@ test('complete workspace: register, upload, review, artifacts, chat, history and
   await expect(
     page.getByRole('link', { name: 'Integration workspace', exact: true }),
   ).toBeVisible();
+  await expect(page.locator('.motion-surface')).toHaveAttribute('data-motion-ready', 'true');
+  await expect(page.locator('.hero-ribbon')).toHaveCSS('clip-path', 'none');
   await page.screenshot({
     path: '../artifacts/projects-desktop.png',
     fullPage: true,
@@ -117,6 +133,8 @@ test('mobile registration, navigation, empty states and no horizontal overflow',
   await expect(
     page.getByRole('heading', { name: 'A clean slate. A new possibility.' }),
   ).toBeVisible();
+  await expect(page.locator('.motion-surface')).toHaveAttribute('data-motion-ready', 'true');
+  await expect(page.locator('.hero-ribbon')).toHaveCSS('clip-path', 'none');
   await page.screenshot({
     path: '../artifacts/projects-mobile.png',
     fullPage: true,
@@ -130,4 +148,68 @@ test('mobile registration, navigation, empty states and no horizontal overflow',
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
+});
+
+test('studio motion: settled ribbons, responsive layouts, reduced-motion changes and route cleanup', async ({
+  page,
+}) => {
+  const runtimeErrors: string[] = [];
+  page.on('pageerror', (error) => runtimeErrors.push(error.message));
+  page.on('console', (message) => {
+    if (message.text().includes('GSAP target')) runtimeErrors.push(message.text());
+  });
+  await page.goto('/login');
+  await expect(page.locator('.motion-surface')).toHaveAttribute('data-motion-ready', 'true');
+  await expect(page.locator('.hero-ribbon')).toHaveCSS('clip-path', 'none');
+  await page.screenshot({ path: '../artifacts/login-desktop.png', fullPage: true });
+  await page.getByRole('link', { name: 'Create an account' }).click();
+  await page.getByLabel('Full name').fill('Motion Engineer');
+  await page.getByLabel('Email address').fill(`motion-${Date.now()}@example.com`);
+  await page.getByLabel('Password', { exact: true }).fill(password);
+  await page.getByRole('button', { name: 'Create account', exact: true }).click();
+  await expect(page).toHaveURL(/\/projects$/);
+  await expect(page.locator('.motion-surface')).toHaveAttribute('data-motion-ready', 'true');
+  await expect(page.locator('.hero-ribbon')).toHaveCSS('clip-path', 'none');
+  await expect
+    .poll(() =>
+      page
+        .locator('.floating-symbol')
+        .first()
+        .evaluate((el) => el.getAttribute('style') || ''),
+    )
+    .toContain('transform');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect
+    .poll(() =>
+      page
+        .locator('.floating-symbol')
+        .first()
+        .evaluate((el) => (el as HTMLElement).style.transform),
+    )
+    .toBe('');
+  await expect(page.locator('.motion-surface')).toHaveAttribute('data-motion-ready', 'true');
+  await expect(page.locator('.hero-ribbon')).toHaveCSS('clip-path', 'none');
+  for (const width of [360, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+    await expect(page.getByRole('button', { name: 'New project', exact: true })).toBeVisible();
+  }
+  await page.getByRole('link', { name: 'Review history', exact: true }).click();
+  await page.getByRole('link', { name: 'AI providers', exact: true }).click();
+  await page.getByRole('link', { name: 'Projects', exact: true }).click();
+  await expect(page.locator('.floating-symbol').first()).not.toHaveAttribute('style', /transform/);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect
+    .poll(() =>
+      page
+        .locator('.floating-symbol')
+        .first()
+        .evaluate((el) => el.getAttribute('style') || ''),
+    )
+    .toContain('transform');
+  await expect(page.locator('.motion-surface')).toHaveAttribute('data-motion-ready', 'true');
+  await expect(page.locator('.hero-ribbon')).toHaveCSS('clip-path', 'none');
+  expect(runtimeErrors).toEqual([]);
 });
