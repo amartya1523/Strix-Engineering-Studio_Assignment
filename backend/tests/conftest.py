@@ -1,8 +1,8 @@
 import os
 
-os.environ["DATABASE_URL"] = os.getenv(
-    "TEST_DATABASE_URL", "postgresql+psycopg://codeatlas_dev:codeatlas_local_only@localhost:5432/codeatlas_test"
-)
+if not os.getenv("TEST_DATABASE_URL"):
+    raise RuntimeError("Set TEST_DATABASE_URL to a dedicated PostgreSQL database ending in _test")
+os.environ["DATABASE_URL"] = os.environ["TEST_DATABASE_URL"]
 os.environ["ENCRYPTION_KEY"] = "4cTHlgFE_tRFlpOFxYo6-Xmw1Ae7HvuouUwPgwgMFV8="
 
 import pytest

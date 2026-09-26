@@ -22,3 +22,6 @@ artifacts/
 *.log
 # Generated handover bundle
 CodeAtlas-submission.zip
+
+# Next.js generates environment type references per build directory
+frontend/next-env.d.ts
