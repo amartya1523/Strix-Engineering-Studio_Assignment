@@ -56,6 +56,8 @@ Browser tests use a separate PostgreSQL database ending in `_e2e`. A local OpenA
 - Final readability adjustments increased source and analysis-control text sizes; responsive screenshots were reviewed after the changes.
 - The reference-inspired interface adds scoped GSAP motion and self-hosted Antonio typography. Empty animation targets are guarded, route changes revert animation contexts, and screenshots wait for hydration and finished reveals rather than recording an intermediate animation frame.
 
+The final handover check also found generated route-type collisions when browser tests and the normal TypeScript check ran concurrently. The browser server now uses a dedicated `tsconfig.e2e.json`; each configuration excludes the other generated build directory. Production type generation and browser tests were rerun after this correction.
+
 ## Live provider verification
 
 The supplied credential authenticated successfully against Groq's model-list endpoint. Live calls then exercised `openai/gpt-oss-120b` through the real application routes and real PostgreSQL in a dedicated `_live_e2e` database:

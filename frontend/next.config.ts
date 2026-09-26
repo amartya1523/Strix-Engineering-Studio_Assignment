@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
 const config: NextConfig = {
   devIndicators: false,
+  typescript: {
+    tsconfigPath: process.env.CODEATLAS_E2E === 'true' ? 'tsconfig.e2e.json' : 'tsconfig.json',
+  },
   distDir: process.env.CODEATLAS_E2E === 'true' ? '.next-e2e' : '.next',
   async rewrites() {
     return [
